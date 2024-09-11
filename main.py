@@ -43,8 +43,5 @@ async def remove_background(file: UploadFile = File(...)):
 
 if __name__ == "__main__":
     import uvicorn
-    import os
-    port = int(os.getenv("PORT", 8000))
-    print(f"Running on port {port}")
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
