@@ -1,22 +1,45 @@
-import sys
+import io
 import os
+from fastapi import FastAPI, File, UploadFile
+from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
+from transformers import pipeline
+from PIL import Image
+from dotenv import load_dotenv
 
-print("Python version:", sys.version)
-print("Current working directory:", os.getcwd())
-print("Contents of current directory:", os.listdir())
-
-try:
-    from fastapi import FastAPI, File, UploadFile
-    print("FastAPI imported successfully")
-except ImportError as e:
-    print("Error importing FastAPI:", str(e))
-    print("Python path:", sys.path)
+# Load environment variables
+load_dotenv()
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=os.getenv("ALLOWED_ORIGINS", "*").split(","),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Create the pipeline
+pipe = pipeline("image-segmentation", model="briaai/RMBG-1.4", trust_remote_code=True)
+
+@app.post("/remove-background/")
+async def remove_background(file: UploadFile = File(...)):
+    # Read the image file
+    contents = await file.read()
+    image = Image.open(io.BytesIO(contents))
+
+    # Process the image
+    output_image = pipe(image)
+
+    # Save the output image to a bytes buffer
+    img_byte_arr = io.BytesIO()
+    output_image.save(img_byte_arr, format='PNG')
+    img_byte_arr.seek(0)
+
+    # Return the image
+    return StreamingResponse(img_byte_arr, media_type="image/png")
 
 if __name__ == "__main__":
     import uvicorn
