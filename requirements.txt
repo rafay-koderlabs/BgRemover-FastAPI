@@ -7,3 +7,7 @@ scikit-image
 uvicorn
 gunicorn
 huggingface_hub
+fastapi
+transformers
+python-dotenv
+python-multipart
