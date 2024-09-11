@@ -12,6 +12,11 @@ load_dotenv()
 
 app = FastAPI()
 
+origins = [
+    "https://bgremover-fastapi-2rkb.onrender.com",
+    "https://bg-remover-omega.vercel.app"
+]
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
